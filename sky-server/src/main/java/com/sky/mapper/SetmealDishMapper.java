@@ -30,4 +30,10 @@ public interface SetmealDishMapper
      */
     //@autoFill(OperationType.INSERT)
     void insertBatch(List<SetmealDish> setmealDishes);
+
+    /**
+     * 根据套餐id删除关联的菜品
+     * @param ids
+     */
+    void deleteByIds(List<Long> ids);
 }

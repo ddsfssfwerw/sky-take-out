@@ -3,6 +3,8 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.annotation.autoFill;
+import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Dish;
@@ -10,6 +12,7 @@ import com.sky.entity.DishFlavor;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.enumeration.OperationType;
+import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
@@ -67,5 +70,48 @@ public class SetmealServiceLmpl implements SetmealService {
             setmealDishMapper.insertBatch(setmealDishes);
             //setmealDishes.forEach(setmealDish -> setmealDishMapper.insert(setmealDish));
         }
+    }
+
+    /**
+     * 套餐批量删除
+     * @param ids
+     */
+    //TODO 完善
+    @Override
+    public void deleteBatch(List<Long> ids) {
+        ids.forEach(id->{
+            Setmeal setmeal = setmealMapper.getById(id);
+            if (setmeal.getStatus() == StatusConstant.ENABLE){
+                throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
+            }
+        });
+        setmealMapper.deleteByIds(ids);
+        setmealDishMapper.deleteByIds(ids);
+
+    }
+
+    /**
+     * 根据id查询套餐
+     * @param setmealid
+     * @return
+     */
+    @Override
+    public SetmealDish getById(long setmealid) {
+        return null;
+    }
+
+    /**
+     * 套餐起售、停售
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startorstop(Integer status, long id) {
+        Setmeal setmeal = new Setmeal();
+        setmeal.setId(id);
+        setmeal.setStatus(status);
+        setmealMapper.update(setmeal);
+
+
     }
 }

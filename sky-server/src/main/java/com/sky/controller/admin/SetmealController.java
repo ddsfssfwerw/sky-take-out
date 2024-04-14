@@ -4,6 +4,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.*;
 import com.sky.entity.Dish;
 import com.sky.entity.Employee;
+import com.sky.entity.SetmealDish;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
@@ -36,16 +37,17 @@ public class SetmealController {
 
     /**
      * 根据id查询套餐
-     * @param employeeLoginDTO
+     * @param setmealid
      * @return
      */
-/*    @GetMapping()
+    //TODO 完善
+    @GetMapping("/{id}")
     @ApiOperation(value = "根据id查询套餐")
-    public Result<List<Dish>> login(@PathVariable long setmealid) {
+    public Result<SetmealDish> getById(@PathVariable long setmealid) {
         log.info("根据id查询套餐：{}", setmealid);
-        setmealService.getById(setmealid);
-        return Result.success(employeeLoginVO);
-    }*/
+        SetmealDish setmealDish = setmealService.getById(setmealid);
+        return Result.success(setmealDish);
+    }
 
     /**
      * 套餐分页查询
@@ -71,6 +73,33 @@ public class SetmealController {
         log.info("新增菜品：{}",setmealDTO);
         setmealService.saveWithFlavor(setmealDTO);
         return Result.success();
+    }
+
+    /**
+     * 套餐批量删除
+     * @param ids
+     * @return
+     */
+    @DeleteMapping
+    @ApiOperation("套餐批量删除")
+    public Result  delete(@RequestParam List<Long> ids){
+        log.info("套餐批量删除：{}",ids);
+        setmealService.deleteBatch(ids);
+        return Result.success();
+    }
+
+    /**
+     * 套餐起售、停售
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("套餐起售、停售")
+    public Result startorstop(@PathVariable Integer status,long id){
+        log.info("套餐起售、停售:{},id:{}",status,id);
+        setmealService.startorstop(status,id);
+        return Result.success();
+
     }
 
 
