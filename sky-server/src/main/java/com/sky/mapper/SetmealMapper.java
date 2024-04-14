@@ -3,6 +3,7 @@ package com.sky.mapper;
 import com.github.pagehelper.Page;
 import com.sky.annotation.autoFill;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Category;
 import com.sky.entity.Setmeal;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
@@ -51,6 +52,14 @@ public interface SetmealMapper {
      */
     @Select("select * from setmeal where id = #{id}")
     Setmeal getById(Long id);
+
+    /**
+     * 套餐的分类id,查询分类名
+     * @param id
+     * @return
+     */
+    @Select("select * from category where id = #{id}")
+    Category getCategoryNameById(Long id);
 
     /**
      * 修改套餐

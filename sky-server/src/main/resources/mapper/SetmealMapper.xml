@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.SetmealMapper">
-    <insert id="insert"  useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="Setmeal" useGeneratedKeys="true" keyProperty="id">
         insert into setmeal
             (category_id, name, price, description, image, create_time, update_time, create_user, update_user)
         VALUES
@@ -16,6 +16,7 @@
             <if test="status != null"> status = #{status},</if>
             <if test="description != null">description = #{description},</if>
             <if test="image != null">image = #{image},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="createUser != null">create_user = #{createUser},</if>
