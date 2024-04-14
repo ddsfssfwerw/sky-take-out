@@ -69,6 +69,10 @@ public class DishServiceImpl implements DishService {
         return new PageResult(page.getTotal(),page.getResult());
     }
 
+    /**
+     * 根据id批量删除菜品
+     * @param ids
+     */
     @Override
     public void deleteBatch(List<Long> ids) {
         ids.forEach(id->{
@@ -126,5 +130,31 @@ public class DishServiceImpl implements DishService {
             dishFlavorMapper.insertBatch(flavors);
         }
 
+    }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    public List<Dish> list(Long categoryId) {
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+        return dishMapper.list(dish);
+    }
+
+    /**
+     * 菜品起售、停售
+     * @param status
+     * @param dishId
+     */
+    @Override
+    public void startorStop(Integer status, long dishId) {
+        Dish dish = new Dish();
+        dish.setId(dishId);
+        dish.setStatus(status);
+        dishMapper.update(dish);
     }
 }

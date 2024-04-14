@@ -41,7 +41,7 @@
     </update>
     <delete id="deleteByIds">
         delete from dish where dish.id in
-        <foreach collection="ids" open="(" close=")" item="id">
+        <foreach collection="ids" separator="," open="(" close=")" item="id">
             #{id}
         </foreach>
     </delete>
@@ -59,6 +59,21 @@
             </if>
         </where>
         order by d.create_time desc
+    </select>
+    <select id="list" resultType="Dish" parameterType="Dish">
+        select * from dish
+        <where>
+            <if test="name != null">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+        order by create_time desc
     </select>
 
 </mapper>
