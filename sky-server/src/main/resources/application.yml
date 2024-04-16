@@ -47,3 +47,9 @@ sky:
       access-key-id: ${sky.alioss.access-key-id}
       access-key-secret: ${sky.alioss.access-key-secret}
       bucket-name: ${sky.alioss.bucket-name}
+    user-secret-key: itheima
+    user-ttl: 720000000
+    user-token-name: authentication
+  wechat:
+    appid: ${sky.wechat.appid}
+    secret: ${sky.wechat.secret}
