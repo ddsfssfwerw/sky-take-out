@@ -1,13 +1,16 @@
 package com.sky.mapper;
 
 import com.github.pagehelper.Page;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author LLY
@@ -58,4 +61,18 @@ public interface OrderMapper {
      */
 
     Page<OrderVO> getAll(long userId,Long status);
+
+    /**
+     * 获取待派送，派送中，待接单订单的数量
+     * @return
+     */
+    List<Orders> get3lei();
+
+
+    /**
+     * 订单搜索
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    Page<Orders> conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
 }
