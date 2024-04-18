@@ -1,5 +1,6 @@
 package com.sky.mapper;
 
+import com.sky.entity.OrderDetail;
 import com.sky.entity.ShoppingCart;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -17,5 +18,5 @@ public interface OrderDetailMapper {
      * 批量插入订单明细
      * @param shoppingCartList
      */
-    void insertBatch(List<ShoppingCart> shoppingCartList);
+    void insertBatch(List<OrderDetail> shoppingCartList);
 }

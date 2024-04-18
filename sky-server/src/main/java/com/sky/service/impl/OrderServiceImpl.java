@@ -74,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
         order.setNumber(String.valueOf(System.currentTimeMillis()));
         order.setUserId(userId);
         order.setStatus(Orders.PENDING_PAYMENT);
-        order.setPayMethod(Orders.UN_PAID);
+        order.setPayStatus(Orders.UN_PAID);
         order.setOrderTime(LocalDateTime.now());
 
 
@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
 
         //向明细表插入n条数据
 
-        orderDetailMapper.insertBatch(shoppingCartList);
+        orderDetailMapper.insertBatch(orderDetailList);
         //清理购物车中的数据
         shoppingCartMapper.deleteAll(userId);
         //封装返回结果
