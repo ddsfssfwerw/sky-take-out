@@ -22,12 +22,14 @@ public interface OrderMapper {
 
     /**
      * 插入订单
+     *
      * @param order
      */
     void insert(Orders order);
 
     /**
      * 根据订单号查询订单
+     *
      * @param orderNumber
      */
     @Select("select * from orders where number = #{orderNumber}")
@@ -35,12 +37,14 @@ public interface OrderMapper {
 
     /**
      * 修改订单信息
+     *
      * @param orders
      */
     void update(Orders orders);
 
     /**
      * 用于替换微信支付更新数据库状态的问题
+     *
      * @param orderStatus
      * @param orderPaidStatus
      */
@@ -49,6 +53,7 @@ public interface OrderMapper {
 
     /**
      * 通过订单id，查询订单详情
+     *
      * @param id
      * @return
      */
@@ -57,13 +62,15 @@ public interface OrderMapper {
 
     /**
      * 获取当前用户所有订单
+     *
      * @return
      */
 
-    Page<OrderVO> getAll(long userId,Long status);
+    Page<OrderVO> getAll(long userId, Long status);
 
     /**
      * 获取待派送，派送中，待接单订单的数量
+     *
      * @return
      */
     List<Orders> get3lei();
@@ -71,8 +78,18 @@ public interface OrderMapper {
 
     /**
      * 订单搜索
+     *
      * @param ordersPageQueryDTO
      * @return
      */
     Page<Orders> conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
+
+    /**
+     * * 根据订单状态和下单时间查询订单
+     * * @param status
+     * * @param orderTime
+     */
+    @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
+    List<Orders> getByStatusAndOrdertimeLT(Integer status, LocalDateTime orderTime);
+
 }

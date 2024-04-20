@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -15,6 +16,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.*;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,9 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -49,10 +53,13 @@ public class OrderServiceImpl implements OrderService {
     private WeChatPayUtil weChatPayUtil;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private WebSocketServer webSocketServer;
     private long orderid;
 
     /**
      * 下单
+     *
      * @param ordersSubmitDTO
      * @return
      */
@@ -71,15 +78,15 @@ public class OrderServiceImpl implements OrderService {
 
         //查询当前用户的购物车数据
         List<ShoppingCart> shoppingCartList = shoppingCartMapper.list(shoppingCart);
-        if (shoppingCartList == null || shoppingCartList.size() == 0){
+        if (shoppingCartList == null || shoppingCartList.size() == 0) {
             throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
 
         //构造订单数据
         Orders order = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO,order);
+        BeanUtils.copyProperties(ordersSubmitDTO, order);
         order.setPhone(addressBook.getPhone());
-        order.setAddress(addressBook.getProvinceName()+addressBook.getCityName()+addressBook.getDistrictName()+addressBook.getDetail());
+        order.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
         order.setConsignee(addressBook.getConsignee());
         order.setNumber(String.valueOf(System.currentTimeMillis()));
         order.setUserId(userId);
@@ -93,9 +100,9 @@ public class OrderServiceImpl implements OrderService {
         //订单明细数据
 
         List<OrderDetail> orderDetailList = new ArrayList<>();
-        for (ShoppingCart sh:shoppingCartList){
+        for (ShoppingCart sh : shoppingCartList) {
             OrderDetail orderDetail = new OrderDetail();
-            BeanUtils.copyProperties(sh,orderDetail);
+            BeanUtils.copyProperties(sh, orderDetail);
             orderDetail.setOrderId(order.getId());
             orderDetailList.add(orderDetail);
         }
@@ -151,6 +158,14 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime check_out_time = LocalDateTime.now();
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderid);
 
+        Map map = new HashMap();
+        map.put("type", 1);//通知类型 1来单提醒 2客户催单
+        map.put("orderId", orderMapper.getByNumber(ordersPaymentDTO.getOrderNumber()));//订单id
+        map.put("content", "订单号:" + ordersPaymentDTO.getOrderNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+        log.info("发送消息：{}", map);
+
+
         return new OrderPaymentVO();
     }
 
@@ -169,12 +184,21 @@ public class OrderServiceImpl implements OrderService {
                 .payStatus(Orders.PAID)
                 .checkoutTime(LocalDateTime.now())
                 .build();
-
         orderMapper.update(orders);
+
+        Map map = new HashMap();
+        map.put("type", 1);//通知类型 1来单提醒 2客户催单
+        map.put("orderId", orders.getId());//订单id
+        map.put("content", "订单号:" + outTradeNo);
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+        log.info("发送消息：{}", map);
+
+
     }
 
     /**
      * 查询订单详情
+     *
      * @param id
      * @return
      */
@@ -185,7 +209,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> list = new ArrayList<>();
         list = orderDetailMapper.getByOrderId(id);
         OrderVO orderVO = new OrderVO();
-        BeanUtils.copyProperties(orders,orderVO);
+        BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(list);
 
         return orderVO;
@@ -193,6 +217,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 查询历史订单
+     *
      * @param page
      * @param pageSize
      * @param status
@@ -200,19 +225,20 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public PageResult getHistoryOrders(int page, int pageSize, Long status) {
-        PageHelper.startPage(page,  pageSize);
+        PageHelper.startPage(page, pageSize);
         long userId = BaseContext.getCurrentId();
-        Page<OrderVO> orderVOS = orderMapper.getAll(userId,status);
-        for (OrderVO os : orderVOS){
+        Page<OrderVO> orderVOS = orderMapper.getAll(userId, status);
+        for (OrderVO os : orderVOS) {
             List<OrderDetail> list = new ArrayList<>();
             list = orderDetailMapper.getByOrderId(os.getId());
             os.setOrderDetailList(list);
         }
-        return new PageResult(orderVOS.getTotal(),orderVOS.getResult());
+        return new PageResult(orderVOS.getTotal(), orderVOS.getResult());
     }
 
     /**
      * 取消订单
+     *
      * @param id
      */
     @Override
@@ -256,6 +282,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 再来一单
+     *
      * @param id
      */
     @Override
@@ -301,6 +328,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 各订单数量统计
+     *
      * @return
      */
     @Override
@@ -327,6 +355,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 订单搜索
+     *
      * @param ordersPageQueryDTO
      * @return
      */
@@ -350,6 +379,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 接单
+     *
      * @param ordersConfirmDTO
      */
     @Override
@@ -401,6 +431,7 @@ public class OrderServiceImpl implements OrderService {
         // 将该订单对应的所有菜品信息拼接在一起
         return String.join("", orderDishList);
     }
+
     /**
      * 拒单
      *
@@ -512,6 +543,25 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
-
-
+    /**
+     * 用户催单
+     *
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        // 查询订单是否存在
+        Orders orders = orderMapper.getById(id);
+        if (orders == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //基于WebSocket实现催单
+        Map map = new HashMap();
+        map.put("type", 2);//2代表用户催单
+        map.put("orderId", id);
+        map.put("content", "订单号：" + orders.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+    }
 }
+
+
